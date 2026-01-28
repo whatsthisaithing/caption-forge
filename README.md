@@ -196,7 +196,7 @@ Ensure the export destination folder exists and you have write permissions.
 
 ## License
 
-MIT License - See [LICENSE](LICENSE) file for details.
+Apache 2.o - See [LICENSE](LICENSE) file for details.
 
 ## See Also
 
