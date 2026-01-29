@@ -2,6 +2,9 @@
 
 **AI-Powered Dataset Management for LORA Training** - A desktop application for preparing high-quality image datasets with AI-assisted captioning, designed specifically for LORA and fine-tuning workflows.
 
+![CaptionForge Screenshot](documentation/screenshots/screenshot1.png)
+*Caption editing interface with AI-generated descriptions, quality assessment, and batch processing capabilities*
+
 ## What is CaptionForge?
 
 CaptionForge streamlines the tedious process of preparing image datasets for AI model training. Instead of manually captioning hundreds of images, you can:
