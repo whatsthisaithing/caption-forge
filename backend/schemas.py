@@ -332,7 +332,8 @@ class ExportRequest(BaseModel):
     export_type: str = Field("folder", pattern="^(folder|zip)$")
     export_path: Optional[str] = None  # Required for folder export
     
-    # Numbering options
+    # Filename options
+    filename_prefix: Optional[str] = None  # Optional prefix for exported files (e.g., "Jeff" -> "Jeff-0001.jpg")
     numbering_start: int = Field(1, ge=0)
     numbering_padding: int = Field(6, ge=1, le=10)
     

@@ -102,9 +102,19 @@ async def global_exception_handler(request: Request, exc: Exception):
 # Request logging middleware
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
-    """Log all API requests with timing."""
+    """Log all API requests with timing and set cache headers."""
     # Skip logging for static files and thumbnails
     path = request.url.path
+    
+    # Process request
+    response = await call_next(request)
+    
+    # Set cache-control headers for static files (HTML, JS, CSS)
+    if path.endswith(('.html', '.js', '.css')):
+        response.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        response.headers['Pragma'] = 'no-cache'
+        response.headers['Expires'] = '0'
+    
     if path.startswith("/api"):
         request_logger = get_logger("captionfoundry.api.requests")
         start_time = time.time()
@@ -112,17 +122,12 @@ async def log_requests(request: Request, call_next):
         # Log request (using ASCII-safe arrows)
         request_logger.debug(f"-> {request.method} {path}")
         
-        # Process request
-        response = await call_next(request)
-        
         # Log response with timing (using ASCII-safe symbols)
         duration_ms = (time.time() - start_time) * 1000
         status_symbol = "[OK]" if response.status_code < 400 else "[ERR]"
         request_logger.debug(f"<- {status_symbol} {request.method} {path} [{response.status_code}] {duration_ms:.1f}ms")
-        
-        return response
-    else:
-        return await call_next(request)
+    
+    return response
 
 
 # Include API routers

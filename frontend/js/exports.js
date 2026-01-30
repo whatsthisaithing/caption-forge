@@ -8,18 +8,8 @@ const Exports = {
      * Initialize the exports module
      */
     init() {
-        this.bindEvents();
+        // Note: Export modal is managed by Datasets module, no event listeners needed here
         Utils.initDroppablePaths();
-    },
-    
-    /**
-     * Bind event listeners
-     */
-    bindEvents() {
-        // Browse export path button
-        document.getElementById('browseExportPath')?.addEventListener('click', async () => {
-            await Utils.browseForFolder('exportPath');
-        });
     },
     
     /**

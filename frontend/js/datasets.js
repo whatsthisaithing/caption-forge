@@ -277,11 +277,11 @@ Include: subject, gender, pose/action, clothing details, hair color/style, eye c
         // Confirm export button
         document.getElementById('confirmExport').addEventListener('click', () => this.startExport());
         
-        // Browse export path button (PyWebView native dialog)
+        // Browse export path button
         document.getElementById('browseExportPath')?.addEventListener('click', async () => {
-            if (typeof window.pywebview !== 'undefined') {
+            if (typeof window.electronAPI !== 'undefined' && window.electronAPI.isElectron) {
                 try {
-                    const folderPath = await window.pywebview.api.select_folder('Select Export Folder');
+                    const folderPath = await window.electronAPI.selectFolder('Select Export Folder');
                     if (folderPath) {
                         document.getElementById('exportPath').value = folderPath;
                     }
@@ -1313,6 +1313,7 @@ Include: subject, gender, pose/action, clothing details, hair color/style, eye c
             export_path: exportPath,
             image_format: document.getElementById('exportImageFormat').value || 'original',
             caption_extension: document.getElementById('exportCaptionExt').value,
+            filename_prefix: document.getElementById('exportFilenamePrefix').value.trim() || null,
             numbering_start: parseInt(document.getElementById('exportNumberStart').value) || 1,
             numbering_padding: parseInt(document.getElementById('exportNumberPad').value) || 4,
             strip_metadata: document.getElementById('exportStripMetadata').checked,

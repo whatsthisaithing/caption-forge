@@ -210,6 +210,24 @@ const Utils = {
     },
     
     /**
+     * Clean up any lingering modal backdrops
+     * Call this if modals get stuck or inputs become unresponsive
+     */
+    cleanupModalBackdrops() {
+        // Remove any stray modal backdrops
+        document.querySelectorAll('.modal-backdrop').forEach(backdrop => {
+            backdrop.remove();
+        });
+        
+        // Remove modal-open class from body
+        document.body.classList.remove('modal-open');
+        
+        // Reset body styles that Bootstrap adds
+        document.body.style.overflow = '';
+        document.body.style.paddingRight = '';
+    },
+    
+    /**
      * Escape HTML to prevent XSS
      */
     escapeHtml(text) {
@@ -347,6 +365,26 @@ const Utils = {
      * Browse for folder using File System Access API
      */
     async browseForFolder(inputId) {
+        // In Electron desktop mode, use native folder picker which provides full paths
+        if (typeof window.electronAPI !== 'undefined' && window.electronAPI.isElectron) {
+            try {
+                const folderPath = await window.electronAPI.selectFolder('Select Folder');
+                if (folderPath) {
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        input.value = folderPath;
+                    }
+                    return folderPath;
+                }
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Folder picker error:', err);
+                }
+            }
+            return null;
+        }
+        
+        // Browser mode - File System Access API (limited, name only)
         if (!('showDirectoryPicker' in window)) {
             Utils.showToast('Folder picker not supported in this browser', 'warning');
             return null;

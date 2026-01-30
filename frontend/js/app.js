@@ -23,6 +23,9 @@ const App = {
         // Initialize settings modal
         this.initSettingsModal();
         
+        // Setup global modal cleanup handler
+        this.setupModalCleanup();
+        
         // Bind navigation
         this.bindNavigation();
         
@@ -40,6 +43,34 @@ const App = {
         }
         
         console.log('CaptionFoundry ready');
+    },
+    
+    /**
+     * Setup global modal cleanup to prevent stuck backdrops
+     */
+    setupModalCleanup() {
+        // Clean up backdrops whenever a modal is about to be shown
+        document.addEventListener('show.bs.modal', () => {
+            // Small delay to let Bootstrap create its backdrop first
+            setTimeout(() => {
+                // Remove any duplicate backdrops (should only be one)
+                const backdrops = document.querySelectorAll('.modal-backdrop');
+                if (backdrops.length > 1) {
+                    for (let i = 1; i < backdrops.length; i++) {
+                        backdrops[i].remove();
+                    }
+                }
+            }, 50);
+        });
+        
+        // Ensure cleanup when modal is hidden
+        document.addEventListener('hidden.bs.modal', () => {
+            // If no modals are open, ensure body classes are cleaned up
+            const openModals = document.querySelectorAll('.modal.show');
+            if (openModals.length === 0) {
+                Utils.cleanupModalBackdrops();
+            }
+        });
     },
     
     /**

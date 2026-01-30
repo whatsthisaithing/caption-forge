@@ -479,17 +479,46 @@
                     <p class="text-muted mb-3">
                         <span id="selectedFilesCount">0</span> file(s) selected
                     </p>
-                    <div class="mb-3">
-                        <label class="form-label">Select Dataset</label>
-                        <select class="form-select" id="selectDatasetList">
-                            <!-- Populated dynamically -->
-                        </select>
+                    
+                    <!-- Mode Toggle -->
+                    <div class="btn-group w-100 mb-3" role="group">
+                        <input type="radio" class="btn-check" name="datasetMode" id="modeSelectExisting" autocomplete="off" checked>
+                        <label class="btn btn-outline-primary" for="modeSelectExisting">
+                            <i class="bi bi-list-ul me-1"></i>Select Existing
+                        </label>
+                        
+                        <input type="radio" class="btn-check" name="datasetMode" id="modeCreateNew" autocomplete="off">
+                        <label class="btn btn-outline-primary" for="modeCreateNew">
+                            <i class="bi bi-plus-circle me-1"></i>Create New
+                        </label>
+                    </div>
+                    
+                    <!-- Select Existing Dataset Section -->
+                    <div id="selectExistingSection">
+                        <div class="mb-3">
+                            <label class="form-label">Select Dataset</label>
+                            <select class="form-select" id="selectDatasetList">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Create New Dataset Section -->
+                    <div id="createNewSection" style="display: none;">
+                        <div class="mb-3">
+                            <label for="newDatasetName" class="form-label">Dataset Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="newDatasetName" placeholder="Enter dataset name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newDatasetDescription" class="form-label">Description (Optional)</label>
+                            <textarea class="form-control" id="newDatasetDescription" rows="2" placeholder="Enter description"></textarea>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-secondary">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="confirmAddToDataset">
-                        <i class="bi bi-plus-lg me-1"></i>Add Files
+                        <i class="bi bi-plus-lg me-1"></i><span id="confirmAddButtonText">Add Files</span>
                     </button>
                 </div>
             </div>
@@ -663,6 +692,11 @@
                                         <option value="txt">.txt</option>
                                         <option value="caption">.caption</option>
                                     </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Filename Prefix (Optional)</label>
+                                    <input type="text" class="form-control" id="exportFilenamePrefix" placeholder="e.g., Jeff">
+                                    <small class="text-muted">A dash will be added after the prefix (e.g., Jeff-0001.jpg)</small>
                                 </div>
                                 <div class="row">
                                     <div class="col-6">

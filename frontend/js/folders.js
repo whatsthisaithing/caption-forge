@@ -252,6 +252,19 @@ const Folders = {
         // Confirm add to dataset button (in modal)
         document.getElementById('confirmAddToDataset')?.addEventListener('click', () => this.confirmAddToDataset());
         
+        // Dataset mode toggle (select existing vs create new)
+        document.getElementById('modeSelectExisting')?.addEventListener('change', () => {
+            document.getElementById('selectExistingSection').style.display = 'block';
+            document.getElementById('createNewSection').style.display = 'none';
+            document.getElementById('confirmAddButtonText').textContent = 'Add Files';
+        });
+        
+        document.getElementById('modeCreateNew')?.addEventListener('change', () => {
+            document.getElementById('selectExistingSection').style.display = 'none';
+            document.getElementById('createNewSection').style.display = 'block';
+            document.getElementById('confirmAddButtonText').textContent = 'Create & Add';
+        });
+        
         // File filter
         document.getElementById('fileFilterType').addEventListener('change', (e) => {
             if (this.currentFolderId) {
@@ -697,16 +710,28 @@ const Folders = {
         try {
             const datasets = await API.listDatasets();
             
-            if (datasets.length === 0) {
-                Utils.showToast('No datasets available. Create a dataset first.', 'warning');
-                return;
-            }
+            // Reset modal to "Select Existing" mode
+            document.getElementById('modeSelectExisting').checked = true;
+            document.getElementById('selectExistingSection').style.display = 'block';
+            document.getElementById('createNewSection').style.display = 'none';
+            document.getElementById('confirmAddButtonText').textContent = 'Add Files';
+            document.getElementById('newDatasetName').value = '';
+            document.getElementById('newDatasetDescription').value = '';
             
-            // Populate the dataset selector modal
+            // Populate the dataset selector
             const select = document.getElementById('selectDatasetList');
-            select.innerHTML = datasets.map(d => `
-                <option value="${d.id}">${Utils.escapeHtml(d.name)} (${d.file_count} files)</option>
-            `).join('');
+            if (datasets.length === 0) {
+                select.innerHTML = '<option value="">No datasets available</option>';
+                // Auto-switch to create new mode
+                document.getElementById('modeCreateNew').checked = true;
+                document.getElementById('selectExistingSection').style.display = 'none';
+                document.getElementById('createNewSection').style.display = 'block';
+                document.getElementById('confirmAddButtonText').textContent = 'Create & Add';
+            } else {
+                select.innerHTML = datasets.map(d => `
+                    <option value="${d.id}">${Utils.escapeHtml(d.name)} (${d.file_count} files)</option>
+                `).join('');
+            }
             
             // Update count display
             document.getElementById('selectedFilesCount').textContent = this.selectedFiles.size;
@@ -724,16 +749,46 @@ const Folders = {
      * Confirm adding selected files to dataset (called from modal)
      */
     async confirmAddToDataset() {
-        const datasetId = document.getElementById('selectDatasetList').value;
-        if (!datasetId) {
-            Utils.showToast('Please select a dataset', 'warning');
-            return;
-        }
+        const isCreateMode = document.getElementById('modeCreateNew').checked;
         
         try {
+            let datasetId;
+            let datasetName;
+            
+            if (isCreateMode) {
+                // Create new dataset mode
+                const name = document.getElementById('newDatasetName').value.trim();
+                const description = document.getElementById('newDatasetDescription').value.trim() || null;
+                
+                if (!name) {
+                    Utils.showToast('Please enter a dataset name', 'warning');
+                    return;
+                }
+                
+                // Create the dataset first
+                const dataset = await API.createDataset(name, description);
+                datasetId = dataset.id;
+                datasetName = dataset.name;
+                Utils.log('info', 'folders', `Created new dataset: id=${datasetId}, name='${datasetName}'`);
+                
+            } else {
+                // Select existing dataset mode
+                datasetId = document.getElementById('selectDatasetList').value;
+                if (!datasetId) {
+                    Utils.showToast('Please select a dataset', 'warning');
+                    return;
+                }
+                datasetName = document.getElementById('selectDatasetList').selectedOptions[0].text;
+            }
+            
+            // Add files to the dataset
             const result = await API.addFilesToDataset(datasetId, Array.from(this.selectedFiles));
-            const datasetName = document.getElementById('selectDatasetList').selectedOptions[0].text;
-            Utils.showToast(`Added ${result.added} files to dataset`, 'success');
+            
+            if (isCreateMode) {
+                Utils.showToast(`Created dataset and added ${result.added} files`, 'success');
+            } else {
+                Utils.showToast(`Added ${result.added} files to dataset`, 'success');
+            }
             
             // Close modal
             bootstrap.Modal.getInstance(document.getElementById('selectDatasetModal')).hide();

@@ -183,6 +183,16 @@ function createWindow() {
                 mainWindow.webContents.toggleDevTools();
                 event.preventDefault();
             }
+            // Ctrl+Shift+R or Ctrl+F5 for hard reload (bypass cache)
+            if ((input.control && input.shift && input.key === 'R') || (input.control && input.key === 'F5')) {
+                mainWindow.webContents.reloadIgnoringCache();
+                event.preventDefault();
+            }
+            // F5 or Ctrl+R for normal reload
+            if (input.key === 'F5' || (input.control && input.key === 'r')) {
+                mainWindow.webContents.reload();
+                event.preventDefault();
+            }
         }
     });
     

@@ -145,9 +145,15 @@ class ExportService:
                 logger.warning(f"Source file not found: {source_path}")
                 continue
             
-            # Generate numbered filename
+            # Generate numbered filename with optional prefix
             file_num = request.numbering_start + idx
             num_str = str(file_num).zfill(request.numbering_padding)
+            
+            # Add prefix if provided
+            if request.filename_prefix:
+                base_name = f"{request.filename_prefix}-{num_str}"
+            else:
+                base_name = num_str
             
             # Determine output format and extension
             if request.image_format == "original" or not request.image_format:
@@ -155,7 +161,7 @@ class ExportService:
             else:
                 ext = f".{request.image_format}" if request.image_format != "jpeg" else ".jpg"
             
-            output_filename = f"{num_str}{ext}"
+            output_filename = f"{base_name}{ext}"
             output_path = export_path / output_filename
             
             # Process and copy image
@@ -175,7 +181,7 @@ class ExportService:
             ).first()
             
             if caption:
-                caption_filename = f"{num_str}.{request.caption_extension}"
+                caption_filename = f"{base_name}.{request.caption_extension}"
                 caption_path = export_path / caption_filename
                 caption_path.write_text(caption.text, encoding="utf-8")
             
@@ -208,9 +214,15 @@ class ExportService:
                     logger.warning(f"Source file not found: {source_path}")
                     continue
                 
-                # Generate numbered filename
+                # Generate numbered filename with optional prefix
                 file_num = request.numbering_start + idx
                 num_str = str(file_num).zfill(request.numbering_padding)
+                
+                # Add prefix if provided
+                if request.filename_prefix:
+                    base_name = f"{request.filename_prefix}-{num_str}"
+                else:
+                    base_name = num_str
                 
                 # Determine output format and extension
                 if request.image_format == "original" or not request.image_format:
@@ -218,7 +230,7 @@ class ExportService:
                 else:
                     ext = f".{request.image_format}" if request.image_format != "jpeg" else ".jpg"
                 
-                output_filename = f"{num_str}{ext}"
+                output_filename = f"{base_name}{ext}"
                 
                 # Process image if needed
                 if request.image_format and request.image_format != "original":
@@ -245,7 +257,7 @@ class ExportService:
                 ).first()
                 
                 if caption:
-                    caption_filename = f"{num_str}.{request.caption_extension}"
+                    caption_filename = f"{base_name}.{request.caption_extension}"
                     zf.writestr(caption_filename, caption.text)
                 
                 file_count += 1
