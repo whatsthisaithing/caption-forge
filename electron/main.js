@@ -1,5 +1,5 @@
 /**
- * CaptionForge - Electron Main Process
+ * CaptionFoundry - Electron Main Process
  * 
  * Launches the Python FastAPI backend as a subprocess and creates
  * the Electron BrowserWindow to load the frontend.
@@ -161,7 +161,7 @@ function createWindow() {
         },
         icon: path.join(__dirname, '..', 'frontend', 'images', 'icon.png'),
         show: false,
-        title: 'CaptionForge'
+        title: 'CaptionFoundry'
     });
     
     // Load the frontend from the backend server

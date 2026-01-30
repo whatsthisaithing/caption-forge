@@ -1,5 +1,5 @@
 """
-CaptionForge Logging Configuration
+CaptionFoundry Logging Configuration
 Creates timestamped log files for each application session.
 """
 
@@ -32,7 +32,7 @@ def setup_logging(level: str = "DEBUG") -> Path:
     LOGS_DIR.mkdir(parents=True, exist_ok=True)
     
     # Log file path with session timestamp
-    log_file = LOGS_DIR / f"captionforge_{SESSION_TIMESTAMP}.log"
+    log_file = LOGS_DIR / f"captionfoundry_{SESSION_TIMESTAMP}.log"
     
     # Convert level string to logging constant
     log_level = getattr(logging, level.upper(), logging.DEBUG)
@@ -76,9 +76,9 @@ def setup_logging(level: str = "DEBUG") -> Path:
     logging.getLogger("PIL").setLevel(logging.WARNING)
     
     # Log session start
-    logger = logging.getLogger("captionforge.startup")
+    logger = logging.getLogger("captionfoundry.startup")
     logger.info("=" * 70)
-    logger.info(f"CaptionForge Session Started")
+    logger.info(f"CaptionFoundry Session Started")
     logger.info(f"  Timestamp: {SESSION_START.isoformat()}")
     logger.info(f"  Log File:  {log_file}")
     logger.info(f"  Log Level: {level.upper()} (console), DEBUG (file)")

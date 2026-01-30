@@ -1,5 +1,5 @@
 /**
- * CaptionForge Exports Module
+ * CaptionFoundry Exports Module
  * Handles export history and downloads
  */
 

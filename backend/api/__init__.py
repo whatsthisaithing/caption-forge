@@ -1,4 +1,4 @@
-"""API routers package for CaptionForge."""
+"""API routers package for CaptionFoundry."""
 
 from .folders import router as folders_router
 from .datasets import router as datasets_router

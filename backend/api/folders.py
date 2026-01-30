@@ -13,7 +13,7 @@ from ..schemas import (
 )
 from ..services.folder_service import FolderService
 
-logger = get_logger("captionforge.api.folders")
+logger = get_logger("captionfoundry.api.folders")
 router = APIRouter(prefix="/folders", tags=["folders"])
 
 

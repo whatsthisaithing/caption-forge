@@ -2,7 +2,7 @@
 
 ## Overview
 
-CaptionForge automatically resizes images before sending them to vision models for caption generation. This optimization:
+CaptionFoundry automatically resizes images before sending them to vision models for caption generation. This optimization:
 
 - ✅ **Reduces inference time** - Smaller images process faster (quadratic relationship)
 - ✅ **Prevents memory issues** - Large images can cause OOM errors in vision models
@@ -279,7 +279,7 @@ These are not implemented because the current approach already provides:
 
 ## Summary
 
-CaptionForge's image preprocessing:
+CaptionFoundry's image preprocessing:
 
 ✅ **Automatic** - No user intervention required  
 ✅ **Fast** - <1% overhead on caption jobs  
@@ -288,4 +288,4 @@ CaptionForge's image preprocessing:
 ✅ **Configurable** - Adjust for your hardware and quality needs  
 ✅ **Reliable** - Handles all common image formats  
 
-The on-the-fly approach with in-memory caching provides the best balance of performance, simplicity, and resource usage for CaptionForge's use case.
+The on-the-fly approach with in-memory caching provides the best balance of performance, simplicity, and resource usage for CaptionFoundry's use case.

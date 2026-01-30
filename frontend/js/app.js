@@ -1,5 +1,5 @@
 /**
- * CaptionForge Main Application
+ * CaptionFoundry Main Application
  * Initializes modules and handles view navigation
  */
 
@@ -12,7 +12,7 @@ const App = {
      * Initialize the application
      */
     async init() {
-        console.log('CaptionForge initializing...');
+        console.log('CaptionFoundry initializing...');
         
         // Initialize modules
         Folders.init();
@@ -39,7 +39,7 @@ const App = {
             this.showView(params.view);
         }
         
-        console.log('CaptionForge ready');
+        console.log('CaptionFoundry ready');
     },
     
     /**

@@ -1,13 +1,13 @@
-# CaptionForge
+# CaptionFoundry
 
 **AI-Powered Dataset Management for LORA Training** - A desktop application for preparing high-quality image datasets with AI-assisted captioning, designed specifically for LORA and fine-tuning workflows.
 
-![CaptionForge Screenshot](documentation/screenshots/screenshot1.png)
+![CaptionFoundry Screenshot](documentation/screenshots/screenshot1.png)
 *Caption editing interface with AI-generated descriptions, quality assessment, and batch processing capabilities*
 
-## What is CaptionForge?
+## What is CaptionFoundry?
 
-CaptionForge streamlines the tedious process of preparing image datasets for AI model training. Instead of manually captioning hundreds of images, you can:
+CaptionFoundry streamlines the tedious process of preparing image datasets for AI model training. Instead of manually captioning hundreds of images, you can:
 
 1. **Organize** your images into datasets with drag-and-drop simplicity
 2. **Auto-caption** entire datasets using local vision AI models
@@ -81,7 +81,7 @@ The app window will open automatically once the backend is ready.
 
 ## Non-Destructive Design
 
-**CaptionForge never modifies your original files.** All operations are 100% safe and non-destructive:
+**CaptionFoundry never modifies your original files.** All operations are 100% safe and non-destructive:
 
 - ✅ **Folder tracking** only reads file metadata - never writes to your images or captions
 - ✅ **Thumbnails** are generated in `data/thumbnails/` - originals untouched
@@ -132,7 +132,7 @@ export:
 
 ## Architecture
 
-CaptionForge uses a hybrid architecture optimized for desktop use:
+CaptionFoundry uses a hybrid architecture optimized for desktop use:
 
 - **Frontend**: HTML/CSS/JavaScript with Bootstrap 5
 - **Desktop Shell**: Electron (provides native file dialogs, drag-drop paths)
@@ -145,7 +145,7 @@ The Electron shell spawns the Python backend as a child process and loads the fr
 ## Project Structure
 
 ```
-CaptionForge/
+CaptionFoundry/
  electron/           # Electron main process
     main.js         # App entry, spawns Python backend
     preload.js      # IPC bridge for native features

@@ -1,6 +1,6 @@
-# CaptionForge Quickstart Guide
+# CaptionFoundry Quickstart Guide
 
-This guide walks you through setting up CaptionForge with a vision AI backend for automatic image captioning.
+This guide walks you through setting up CaptionFoundry with a vision AI backend for automatic image captioning.
 
 ## Table of Contents
 
@@ -8,7 +8,7 @@ This guide walks you through setting up CaptionForge with a vision AI backend fo
 2. [Vision Backend Setup](#vision-backend-setup)
    - [Option A: Ollama (Recommended)](#option-a-ollama-recommended)
    - [Option B: LM Studio](#option-b-lm-studio)
-3. [CaptionForge Installation](#captionforge-installation)
+3. [CaptionFoundry Installation](#captionfoundry-installation)
 4. [First Run](#first-run)
 5. [Captioning Your First Dataset](#captioning-your-first-dataset)
 6. [Model Recommendations](#model-recommendations)
@@ -18,7 +18,7 @@ This guide walks you through setting up CaptionForge with a vision AI backend fo
 
 ## Prerequisites
 
-Before installing CaptionForge, ensure you have:
+Before installing CaptionFoundry, ensure you have:
 
 - **Python 3.10 or higher** - [Download from python.org](https://python.org)
 - **Node.js 18 or higher** - [Download from nodejs.org](https://nodejs.org)
@@ -29,7 +29,7 @@ Before installing CaptionForge, ensure you have:
 
 ## Vision Backend Setup
 
-CaptionForge requires a local vision model server to generate captions. You have two options:
+CaptionFoundry requires a local vision model server to generate captions. You have two options:
 
 ### Option A: Ollama (Recommended)
 
@@ -119,7 +119,7 @@ Download from [lmstudio.ai](https://lmstudio.ai/) and install.
 3. Click **Start Server**
 4. Note the server URL (default: `http://localhost:1234`)
 
-#### 4. Configure CaptionForge
+#### 4. Configure CaptionFoundry
 
 Update `config/settings.yaml`:
 ```yaml
@@ -130,11 +130,11 @@ vision:
 
 ---
 
-## CaptionForge Installation
+## CaptionFoundry Installation
 
 #### 1. Clone or Download
 
-Download CaptionForge to your preferred location.
+Download CaptionFoundry to your preferred location.
 
 #### 2. Run the Installer
 
@@ -182,7 +182,7 @@ ollama serve
 
 **LM Studio:** Start the local server with your model loaded.
 
-#### 2. Start CaptionForge
+#### 2. Start CaptionFoundry
 
 **Windows:**
 ```batch
@@ -198,7 +198,7 @@ The application window will open once the backend is ready.
 
 #### 3. Verify Connection
 
-In CaptionForge:
+In CaptionFoundry:
 1. Click the **Settings** tab
 2. Check the "Vision Backend" section
 3. You should see your models listed in the dropdown
@@ -214,7 +214,7 @@ If no models appear, check that your backend is running.
 - **Drag and drop** a folder containing images onto the Folders panel
 - Or click **Add Folder** and select a folder
 
-CaptionForge will scan the folder and generate thumbnails.
+CaptionFoundry will scan the folder and generate thumbnails.
 
 ### Step 2: Create a Dataset
 

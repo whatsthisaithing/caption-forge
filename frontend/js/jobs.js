@@ -1,5 +1,5 @@
 /**
- * CaptionForge Jobs Module
+ * CaptionFoundry Jobs Module
  * Handles caption generation job management
  */
 

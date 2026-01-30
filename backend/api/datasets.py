@@ -14,7 +14,7 @@ from ..schemas import (
 )
 from ..services.dataset_service import DatasetService
 
-logger = get_logger("captionforge.api.datasets")
+logger = get_logger("captionfoundry.api.datasets")
 router = APIRouter(prefix="/datasets", tags=["datasets"])
 
 

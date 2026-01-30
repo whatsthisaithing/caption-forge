@@ -2,7 +2,7 @@
 
 echo ""
 echo "========================================"
-echo "  CaptionForge - Starting Desktop App"
+echo "  CaptionFoundry - Starting Desktop App"
 echo "========================================"
 echo ""
 
@@ -27,7 +27,7 @@ if [ ! -f "config/settings.yaml" ]; then
     cp "config/settings.yaml.template" "config/settings.yaml"
 fi
 
-echo "[INFO] Starting CaptionForge..."
+echo "[INFO] Starting CaptionFoundry..."
 echo ""
 
 # Start the Electron app (which will spawn the Python backend)

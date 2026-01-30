@@ -2,7 +2,7 @@
 
 echo ""
 echo "========================================"
-echo "  CaptionForge - Update"
+echo "  CaptionFoundry - Update"
 echo "========================================"
 echo ""
 
@@ -88,5 +88,5 @@ echo "========================================"
 echo "  Update Complete!"
 echo "========================================"
 echo ""
-echo "To start CaptionForge, run: ./start.sh"
+echo "To start CaptionFoundry, run: ./start.sh"
 echo ""

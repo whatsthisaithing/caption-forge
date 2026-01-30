@@ -1,6 +1,6 @@
-# CaptionForge - LORA Dataset Management System
+# CaptionFoundry - LORA Dataset Management System
 
-**Project Name**: CaptionForge  
+**Project Name**: CaptionFoundry  
 **Version**: 1.0  
 **Date**: January 28, 2026  
 **Status**: Active Development  
@@ -136,7 +136,7 @@ A standalone desktop application for managing image/video datasets used for trai
 ### Project Structure
 
 ```
-captionforge/
+captionfoundry/
 ├── electron/
 │   ├── main.js                    # Electron main process (spawns Python backend)
 │   └── preload.js                 # Context bridge for secure IPC
@@ -220,7 +220,7 @@ captionforge/
 
 **Pattern**: Based on Chorus Engine's Discord Bridge implementation - self-contained, portable Python venv.
 
-CaptionForge uses a **self-contained virtual environment** approach for maximum portability and ease of deployment:
+CaptionFoundry uses a **self-contained virtual environment** approach for maximum portability and ease of deployment:
 
 - **Virtual environment in `.venv/`**: All Python dependencies installed locally
 - **Cross-platform scripts**: Batch files for Windows, shell scripts for Linux/macOS
@@ -234,11 +234,11 @@ CaptionForge uses a **self-contained virtual environment** approach for maximum 
 
 ```batch
 @echo off
-REM CaptionForge - Windows Installation Script
+REM CaptionFoundry - Windows Installation Script
 REM Creates a self-contained virtual environment for portability
 
 echo ============================================
-echo  CaptionForge - Installation (Windows)
+echo  CaptionFoundry - Installation (Windows)
 echo ============================================
 echo.
 echo This application is PORTABLE - you can copy this folder
@@ -330,7 +330,7 @@ echo ============================================
 echo.
 echo Next steps:
 echo   1. Review config\settings.yaml
-echo   2. Run start.bat to launch CaptionForge
+echo   2. Run start.bat to launch CaptionFoundry
 echo.
 pause
 ```
@@ -339,11 +339,11 @@ pause
 
 ```bash
 #!/bin/bash
-# CaptionForge - Linux/Mac Installation Script
+# CaptionFoundry - Linux/Mac Installation Script
 # Creates a self-contained virtual environment for portability
 
 echo "============================================"
-echo " CaptionForge - Installation (Linux/Mac)"
+echo " CaptionFoundry - Installation (Linux/Mac)"
 echo "============================================"
 echo ""
 echo "This application is PORTABLE - you can copy this folder"
@@ -425,13 +425,13 @@ echo "============================================"
 echo ""
 echo "Next steps:"
 echo "  1. Review config/settings.yaml"
-echo "  2. Run ./start.sh to launch CaptionForge"
+echo "  2. Run ./start.sh to launch CaptionFoundry"
 echo ""
 ```
 
 ### Startup Scripts
 
-CaptionForge can be launched in two modes:
+CaptionFoundry can be launched in two modes:
 
 1. **Desktop Mode** (`start_app.bat` / `start_app.sh`) - Recommended for most users
    - Opens as a native desktop application window
@@ -448,10 +448,10 @@ CaptionForge can be launched in two modes:
 ```batch
 @echo off
 setlocal enabledelayedexpansion
-REM CaptionForge - Windows Desktop Application Launcher
+REM CaptionFoundry - Windows Desktop Application Launcher
 
 echo ============================================
-echo   CaptionForge - Desktop Application
+echo   CaptionFoundry - Desktop Application
 echo ============================================
 echo.
 
@@ -472,7 +472,7 @@ if not exist "config\settings.yaml" (
     copy "config\settings.yaml.template" "config\settings.yaml" >nul
 )
 
-echo [INFO] Starting CaptionForge Desktop...
+echo [INFO] Starting CaptionFoundry Desktop...
 echo.
 
 python app.py
@@ -483,10 +483,10 @@ pause
 
 ```batch
 @echo off
-REM CaptionForge - Windows Startup Script
+REM CaptionFoundry - Windows Startup Script
 
 echo ============================================
-echo    CaptionForge - Starting Up
+echo    CaptionFoundry - Starting Up
 echo ============================================
 echo.
 
@@ -522,7 +522,7 @@ echo [OK] Configuration found
 echo.
 
 REM Start backend server
-echo [INFO] Starting CaptionForge backend...
+echo [INFO] Starting CaptionFoundry backend...
 echo       API: http://localhost:8000
 echo       Press Ctrl+C to stop
 echo.
@@ -534,10 +534,10 @@ echo.
 
 ```bash
 #!/bin/bash
-# CaptionForge - Linux/Mac Startup Script
+# CaptionFoundry - Linux/Mac Startup Script
 
 echo "============================================"
-echo "   CaptionForge - Starting Up"
+echo "   CaptionFoundry - Starting Up"
 echo "============================================"
 echo ""
 
@@ -578,7 +578,7 @@ echo "[OK] Configuration found"
 echo ""
 
 # Start backend server
-echo "[INFO] Starting CaptionForge backend..."
+echo "[INFO] Starting CaptionFoundry backend..."
 echo "       API: http://localhost:8000"
 echo "       Press Ctrl+C to stop"
 echo ""
@@ -592,10 +592,10 @@ python -m uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 
 ```batch
 @echo off
-REM CaptionForge - Windows Update Script
+REM CaptionFoundry - Windows Update Script
 
 echo ============================================
-echo    CaptionForge - Update
+echo    CaptionFoundry - Update
 echo ============================================
 echo.
 
@@ -626,7 +626,7 @@ echo ============================================
 echo  Update Complete!
 echo ============================================
 echo.
-echo Run start.bat to launch CaptionForge
+echo Run start.bat to launch CaptionFoundry
 echo.
 pause
 ```
@@ -635,10 +635,10 @@ pause
 
 ```bash
 #!/bin/bash
-# CaptionForge - Linux/Mac Update Script
+# CaptionFoundry - Linux/Mac Update Script
 
 echo "============================================"
-echo "   CaptionForge - Update"
+echo "   CaptionFoundry - Update"
 echo "============================================"
 echo ""
 
@@ -668,7 +668,7 @@ echo "============================================"
 echo " Update Complete!"
 echo "============================================"
 echo ""
-echo "Run ./start.sh to launch CaptionForge"
+echo "Run ./start.sh to launch CaptionFoundry"
 echo ""
 ```
 
@@ -712,7 +712,7 @@ echo ""
 
 ### Caption Data Model Architecture
 
-CaptionForge uses a **two-tier caption architecture** to separate source captions from working captions:
+CaptionFoundry uses a **two-tier caption architecture** to separate source captions from working captions:
 
 #### Imported Captions (Read-Only Reference)
 - **Location**: `tracked_files.imported_caption`
@@ -782,7 +782,7 @@ CaptionForge uses a **two-tier caption architecture** to separate source caption
 
 ### Trigger Phrase / Caption Prefix Feature
 
-**Purpose**: LORA training often requires a consistent trigger word or phrase at the start of every caption to associate the trained concept. CaptionForge supports this natively via the "Trigger Phrase" field on caption sets.
+**Purpose**: LORA training often requires a consistent trigger word or phrase at the start of every caption to associate the trained concept. CaptionFoundry supports this natively via the "Trigger Phrase" field on caption sets.
 
 #### How It Works
 
@@ -1137,7 +1137,7 @@ The vision system architecture is directly adapted from Chorus Engine's proven i
 
 ### Vision Model Configuration
 
-**Dual Backend Support**: CaptionForge supports both Ollama and LM Studio as vision model backends. Each model in the curated list includes proper names for both backends, and the system can automatically pull/download models if not already available.
+**Dual Backend Support**: CaptionFoundry supports both Ollama and LM Studio as vision model backends. Each model in the curated list includes proper names for both backends, and the system can automatically pull/download models if not already available.
 
 **Default Backend**: Ollama (recommended for most users due to simpler setup and broader model support)
 
@@ -1286,7 +1286,7 @@ async def pull_model(backend: str, pull_command: str) -> bool:
 
 ### Model Pulling UX (Adapted from Chorus Engine)
 
-CaptionForge implements a proven model pulling workflow adapted from Chorus Engine's Model Manager:
+CaptionFoundry implements a proven model pulling workflow adapted from Chorus Engine's Model Manager:
 
 #### UI Flow
 
@@ -1371,7 +1371,7 @@ CaptionForge implements a proven model pulling workflow adapted from Chorus Engi
 
 **From Chorus Engine Character Editor**:
 - Two modes: "Select from Curated" (dropdown) or "Custom Model Name" (text input)
-- CaptionForge uses same pattern in Vision Settings:
+- CaptionFoundry uses same pattern in Vision Settings:
 
 ```html
 <div class="model-selection">
@@ -1405,7 +1405,7 @@ CaptionForge implements a proven model pulling workflow adapted from Chorus Engi
 **Benefits of Custom Mode**:
 - Users can specify exact quantizations (e.g., `qwen3-vl:4b-q5_k_m`, `qwen/qwen3-vl-4b:Q8_0`)
 - Supports experimental or unreleased models
-- No need to update CaptionForge's curated list for every model variant
+- No need to update CaptionFoundry's curated list for every model variant
 
 #### Database Tracking
 
@@ -2035,7 +2035,7 @@ Export dataset with processing options.
 
 ```
 ┌────────────────────────────────────────────────────────────────────────────┐
-│  [CaptionForge]  [+ Folder]  [Settings]                        [@username]  │
+│  [CaptionFoundry]  [+ Folder]  [Settings]                        [@username]  │
 ├─────────────────┬──────────────────────────────────┬───────────────────────┤
 │   DATASETS      │       IMAGE GRID                 │   CAPTION EDITOR      │
 │   (Left Panel)  │       (Center Panel)             │   (Right Panel)       │
@@ -2756,4 +2756,4 @@ server:
 
 **End of Document**
 
-This comprehensive planning document covers all aspects of the CaptionForge LORA Dataset Management System, from database design through implementation phases, providing a complete roadmap for development.
+This comprehensive planning document covers all aspects of the CaptionFoundry LORA Dataset Management System, from database design through implementation phases, providing a complete roadmap for development.

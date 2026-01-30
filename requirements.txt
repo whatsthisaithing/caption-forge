@@ -1,4 +1,4 @@
-# CaptionForge - Python Dependencies
+# CaptionFoundry - Python Dependencies
 # LORA Dataset Management System
 
 # Web Framework

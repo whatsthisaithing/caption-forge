@@ -1,4 +1,4 @@
-"""Database configuration and session management for CaptionForge."""
+"""Database configuration and session management for CaptionFoundry."""
 
 import logging
 from pathlib import Path

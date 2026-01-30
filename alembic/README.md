@@ -1,6 +1,6 @@
 # Database Migrations
 
-This directory contains Alembic database migrations for CaptionForge.
+This directory contains Alembic database migrations for CaptionFoundry.
 
 ## Automatic Migrations
 

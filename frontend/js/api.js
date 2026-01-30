@@ -1,5 +1,5 @@
 /**
- * CaptionForge API Client
+ * CaptionFoundry API Client
  * Handles all HTTP communication with the backend
  */
 

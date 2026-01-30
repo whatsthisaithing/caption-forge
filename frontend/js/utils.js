@@ -1,5 +1,5 @@
 /**
- * CaptionForge Utility Functions
+ * CaptionFoundry Utility Functions
  */
 
 const Utils = {

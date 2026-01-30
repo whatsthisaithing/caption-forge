@@ -1,5 +1,5 @@
 /**
- * CaptionForge Datasets Module
+ * CaptionFoundry Datasets Module
  * Handles dataset management and caption sets
  */
 

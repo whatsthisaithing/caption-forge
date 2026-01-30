@@ -1,5 +1,5 @@
 /**
- * CaptionForge Folders Module
+ * CaptionFoundry Folders Module
  * Handles folder browsing and file selection with drag-and-drop support
  */
 

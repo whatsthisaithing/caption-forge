@@ -1,4 +1,4 @@
-"""CaptionForge FastAPI Application."""
+"""CaptionFoundry FastAPI Application."""
 
 import sys
 import io
@@ -26,7 +26,7 @@ from .api import (
 )
 from . import __version__
 
-logger = get_logger("captionforge.main")
+logger = get_logger("captionfoundry.main")
 
 
 def check_logging_initialized():
@@ -44,7 +44,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan handler."""
     # Startup
     check_logging_initialized()
-    logger.info(f"Starting CaptionForge v{__version__}")
+    logger.info(f"Starting CaptionFoundry v{__version__}")
     
     # Ensure data directories exist
     settings = get_settings()
@@ -61,12 +61,12 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     close_db()
-    logger.info("CaptionForge shutdown complete")
+    logger.info("CaptionFoundry shutdown complete")
 
 
 # Create FastAPI app
 app = FastAPI(
-    title="CaptionForge",
+    title="CaptionFoundry",
     description="LORA Dataset Management System - Manage image datasets with AI-powered captioning",
     version=__version__,
     lifespan=lifespan,
@@ -86,7 +86,7 @@ app.add_middleware(
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
     """Log all unhandled exceptions to the debug log."""
-    error_logger = get_logger("captionforge.errors")
+    error_logger = get_logger("captionfoundry.errors")
     error_logger.error(f"Unhandled exception on {request.method} {request.url.path}")
     error_logger.error(f"Exception type: {type(exc).__name__}")
     error_logger.error(f"Exception message: {str(exc)}")
@@ -106,7 +106,7 @@ async def log_requests(request: Request, call_next):
     # Skip logging for static files and thumbnails
     path = request.url.path
     if path.startswith("/api"):
-        request_logger = get_logger("captionforge.api.requests")
+        request_logger = get_logger("captionfoundry.api.requests")
         start_time = time.time()
         
         # Log request (using ASCII-safe arrows)
@@ -144,7 +144,7 @@ if frontend_dir.exists():
 def api_root():
     """API root endpoint."""
     return {
-        "name": "CaptionForge API",
+        "name": "CaptionFoundry API",
         "version": __version__,
         "docs_url": "/docs",
     }

@@ -1,10 +1,10 @@
 # Vision Model Prompting Guide
 
-This document explains how CaptionForge constructs prompts when sending images to vision language models (VLMs) for automatic caption generation.
+This document explains how CaptionFoundry constructs prompts when sending images to vision language models (VLMs) for automatic caption generation.
 
 ## Overview
 
-CaptionForge uses a **two-part prompt architecture** that separates concerns:
+CaptionFoundry uses a **two-part prompt architecture** that separates concerns:
 
 1. **Creative Prompt** (User-Customizable)
    - Controls the style, tone, and content of the generated caption
@@ -581,7 +581,7 @@ Describe the image. Include what you see.
 
 ### Response Parsing
 
-CaptionForge handles various response formats:
+CaptionFoundry handles various response formats:
 - Standard JSON (preferred)
 - JSON wrapped in markdown code blocks (```json ... ```)
 - Plain text fallback if JSON parsing fails
@@ -600,7 +600,7 @@ If the model doesn't follow the JSON format:
 
 ## Summary
 
-CaptionForge's two-part prompt architecture gives you:
+CaptionFoundry's two-part prompt architecture gives you:
 
 ✅ **Full creative control** over caption style and content  
 ✅ **Consistent output format** that the system can reliably parse  
@@ -608,4 +608,4 @@ CaptionForge's two-part prompt architecture gives you:
 ✅ **Flexibility** from simple presets to advanced custom prompts  
 ✅ **Safety** by preventing users from breaking JSON parsing  
 
-Whether you're training a character LoRA, building a style dataset, or creating comprehensive image descriptions, CaptionForge's prompting system adapts to your needs while maintaining reliability.
+Whether you're training a character LoRA, building a style dataset, or creating comprehensive image descriptions, CaptionFoundry's prompting system adapts to your needs while maintaining reliability.

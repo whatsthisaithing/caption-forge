@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 echo.
 echo ========================================
-echo   CaptionForge - Starting Desktop App
+echo   CaptionFoundry - Starting Desktop App
 echo ========================================
 echo.
 
@@ -30,7 +30,7 @@ if not exist "config\settings.yaml" (
     copy "config\settings.yaml.template" "config\settings.yaml" >nul
 )
 
-echo [INFO] Starting CaptionForge...
+echo [INFO] Starting CaptionFoundry...
 echo.
 
 :: Start the Electron app (which will spawn the Python backend)

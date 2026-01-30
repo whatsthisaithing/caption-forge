@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 echo.
 echo ========================================
-echo   CaptionForge - Installation
+echo   CaptionFoundry - Installation
 echo ========================================
 echo.
 
@@ -103,7 +103,7 @@ echo ========================================
 echo   Installation Complete!
 echo ========================================
 echo.
-echo To start CaptionForge, run: start.bat
+echo To start CaptionFoundry, run: start.bat
 echo.
 echo Configuration: config\settings.yaml
 echo Database: data\captionforge.db (created on first run)

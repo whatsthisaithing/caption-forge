@@ -3,7 +3,7 @@ setlocal enabledelayedexpansion
 
 echo.
 echo ========================================
-echo   CaptionForge - Update
+echo   CaptionFoundry - Update
 echo ========================================
 echo.
 
@@ -95,6 +95,6 @@ echo ========================================
 echo   Update Complete!
 echo ========================================
 echo.
-echo To start CaptionForge, run: start.bat
+echo To start CaptionFoundry, run: start.bat
 echo.
 pause
