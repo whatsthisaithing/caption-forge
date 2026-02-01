@@ -1,7 +1,7 @@
 """Pydantic schemas for API request/response validation."""
 
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, model_validator
 
 
@@ -201,6 +201,7 @@ class CaptionSetResponse(BaseModel):
     caption_count: int
     created_date: datetime
     updated_date: datetime
+    can_rollback_bulk_edit: Optional[bool] = False  # Will be populated by API
     
     class Config:
         from_attributes = True
@@ -245,6 +246,120 @@ class CaptionResponse(BaseModel):
 class CaptionBatchUpdate(BaseModel):
     """Request schema for batch caption updates."""
     captions: List[CaptionCreate]
+
+
+# ============================================================
+# Bulk Edit Schemas
+# ============================================================
+
+class BulkEditOperation(BaseModel):
+    """Configuration for a single bulk edit operation."""
+    operation_type: str = Field(..., pattern="^(prepend|append|find_replace|trim|case_convert|remove_pattern)$")
+    
+    # For prepend/append
+    text: Optional[str] = None
+    
+    # For find_replace
+    find: Optional[str] = None
+    replace: Optional[str] = None
+    use_regex: bool = False
+    case_sensitive: bool = True
+    
+    # For case_convert
+    case_type: Optional[str] = Field(None, pattern="^(upper|lower|title|sentence)$")
+    
+    # For remove_pattern
+    pattern: Optional[str] = None
+    pattern_is_regex: bool = False
+
+
+class BulkEditRequest(BaseModel):
+    """Request schema for bulk caption editing."""
+    operations: List[BulkEditOperation] = Field(..., min_length=1, description="List of operations to apply in order")
+    
+    @model_validator(mode='after')
+    def validate_operations(self):
+        """Validate that each operation has required fields."""
+        for op in self.operations:
+            if op.operation_type in ["prepend", "append"] and not op.text:
+                raise ValueError(f"{op.operation_type} operation requires 'text' field")
+            if op.operation_type == "find_replace" and (not op.find or op.replace is None):
+                raise ValueError("find_replace operation requires 'find' and 'replace' fields")
+            if op.operation_type == "case_convert" and not op.case_type:
+                raise ValueError("case_convert operation requires 'case_type' field")
+            if op.operation_type == "remove_pattern" and not op.pattern:
+                raise ValueError("remove_pattern operation requires 'pattern' field")
+        return self
+
+
+class CaptionPreview(BaseModel):
+    """Preview of a caption before and after bulk edit."""
+    caption_id: str
+    file_id: str
+    before: str
+    after: str
+
+
+class BulkEditPreviewResponse(BaseModel):
+    """Response schema for bulk edit preview."""
+    total_captions: int
+    affected_captions: int
+    samples: List[CaptionPreview] = Field(..., description="Sample of affected captions (up to 5)")
+    operation_summary: str = Field(..., description="Human-readable description of operations")
+
+
+class BulkEditApplyResponse(BaseModel):
+    """Response schema for applying bulk edits."""
+    updated_count: int
+    skipped_count: int
+    error_count: int
+    errors: List[Dict[str, str]] = Field(default_factory=list)
+
+
+class BulkRollbackPreviewResponse(BaseModel):
+    """Response schema for bulk rollback preview."""
+    total_captions: int
+    rollbackable_count: int
+    skipped_count: int
+    samples: List[Dict[str, Any]] = Field(default_factory=list, description="Sample of captions that will be rolled back")
+    skipped_reasons: List[Dict[str, str]] = Field(default_factory=list, description="Reasons why some captions were skipped")
+
+
+class BulkRollbackApplyResponse(BaseModel):
+    """Response schema for applying bulk rollback."""
+    rolled_back_count: int
+    skipped_count: int
+    error_count: int
+    errors: List[Dict[str, str]] = Field(default_factory=list)
+
+
+# ============================================================
+# Caption Version History Schemas
+# ============================================================
+
+class CaptionVersionResponse(BaseModel):
+    """Response schema for a caption version."""
+    id: str
+    caption_id: str
+    version_number: int
+    text: str
+    operation: Optional[str]
+    operation_description: Optional[str]
+    source: Optional[str]
+    vision_model: Optional[str]
+    quality_score: Optional[float]
+    quality_flags: Optional[str]
+    created_date: datetime
+    
+    class Config:
+        from_attributes = True
+
+
+class CaptionWithHistoryResponse(BaseModel):
+    """Response schema for a caption with its version history."""
+    caption: CaptionResponse
+    versions: List[CaptionVersionResponse]
+    total_versions: int
 
 
 # ============================================================

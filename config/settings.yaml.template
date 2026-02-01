@@ -15,7 +15,7 @@ vision:
   lmstudio_url: "http://localhost:1234"
   
   # Default model for caption generation
-  default_model: "qwen2.5-vl:7b"
+  default_model: "qwen3-vl:4b"
   
   # Request timeout in seconds
   timeout_seconds: 120

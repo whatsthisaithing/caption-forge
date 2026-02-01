@@ -123,30 +123,11 @@ def init_db():
 def _run_alembic_migrations():
     """Run Alembic migrations to upgrade database schema."""
     try:
-        # Fast pre-check: if alembic_version table exists and is at latest, skip entirely
-        engine = get_engine()
-        with engine.connect() as conn:
-            # Check if alembic_version table exists
-            result = conn.execute(text(
-                "SELECT name FROM sqlite_master WHERE type='table' AND name='alembic_version'"
-            )).fetchone()
-            
-            if result:
-                # Check current version
-                current_version = conn.execute(text(
-                    "SELECT version_num FROM alembic_version"
-                )).scalar()
-                
-                # Hard-coded latest version (update this when adding new migrations)
-                LATEST_VERSION = "7be3a357459c"
-                
-                if current_version == LATEST_VERSION:
-                    logger.debug("Database schema is up to date, skipping migration check")
-                    return
-        
         # Lazy import to avoid slowing down module load
         from alembic.config import Config as AlembicConfig
         from alembic import command as alembic_command
+        from alembic.script import ScriptDirectory
+        from alembic.runtime.migration import MigrationContext
         
         alembic_ini_path = PROJECT_ROOT / "alembic.ini"
         
@@ -160,6 +141,22 @@ def _run_alembic_migrations():
         # Override the database URL to ensure it matches our runtime config
         db_path = get_database_path()
         alembic_cfg.set_main_option("sqlalchemy.url", f"sqlite:///{db_path}")
+        
+        # Fast pre-check: if current revision == head revision, skip migration
+        engine = get_engine()
+        with engine.connect() as conn:
+            migration_context = MigrationContext.configure(conn)
+            current_rev = migration_context.get_current_revision()
+            
+            # Get the head revision from the migration scripts
+            script = ScriptDirectory.from_config(alembic_cfg)
+            head_rev = script.get_current_head()
+            
+            if current_rev == head_rev:
+                logger.debug(f"Database schema is up to date at revision {current_rev}, skipping migrations")
+                return
+            
+            logger.info(f"Database needs migration: {current_rev} -> {head_rev}")
         
         # Suppress Alembic's verbose output to stderr
         import logging as alembic_logging

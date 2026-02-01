@@ -23,6 +23,8 @@ The entire workflow runs locally on your machine - no cloud services, no API cos
 - **Dataset Management** - Organize images into named datasets with descriptions
 - **Caption Sets** - Multiple caption styles per dataset (booru tags, natural language, etc.)
 - **AI Auto-Captioning** - Generate captions using local Ollama or LM Studio vision models
+- **Bulk Caption Editing** - Apply prepend/append, find/replace (with regex), trim, case conversion, and pattern removal to all captions at once
+- **Version History** - Full version tracking with rollback for all caption changes (manual edits, bulk operations, AI generation)
 - **Quality Scoring** - Automatic quality assessment with detailed flags
 - **Manual Editing** - Click any image to edit its caption with real-time preview
 - **Smart Export** - Export with sequential numbering, format conversion, metadata stripping
@@ -99,8 +101,32 @@ Feel confident experimenting - your source files are always protected.
 3. **Create Dataset** - Select images and click "Create Dataset"
 4. **Add Caption Set** - Choose a captioning style (booru, natural, descriptive)
 5. **Auto-Caption** - Click "Auto-Caption All" to generate captions with AI
-6. **Review & Edit** - Click any image to review/edit its caption
-7. **Export** - Export the completed dataset with sequential naming
+6. **Bulk Edit** (Optional) - Use bulk operations to refine all captions at once (prepend/append text, find/replace with regex, case conversion, etc.)
+7. **Review & Edit** - Click any image to review/edit its caption (full version history available with rollback)
+8. **Export** - Export the completed dataset with sequential naming
+
+### Bulk Caption Editing
+
+Apply transformations to all captions in a caption set simultaneously:
+
+- **Prepend/Append** - Add text to the beginning or end of all captions
+- **Find & Replace** - Replace text across all captions with optional regex support
+- **Trim Whitespace** - Clean up extra spaces and newlines
+- **Case Conversion** - Change to uppercase, lowercase, title case, or sentence case
+- **Remove Patterns** - Delete matching text patterns (supports regex)
+
+All operations provide a **preview** before applying, showing how many captions will be affected and sample before/after text.
+
+### Version History & Rollback
+
+Every caption change is tracked with complete version history:
+
+- **Automatic Versioning** - All edits (manual, bulk, AI-generated) create version snapshots
+- **Version Viewer** - Click the history button to see all previous versions of any caption
+- **Individual Rollback** - Restore any caption to a previous version
+- **Bulk Rollback** - Undo an entire bulk edit operation across all affected captions
+
+Version history includes the operation type, timestamp, and description for easy identification.
 
 ## Configuration
 

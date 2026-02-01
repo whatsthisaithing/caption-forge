@@ -183,9 +183,24 @@ def create_caption_set(
 @router.get("/{dataset_id}/caption-sets", response_model=List[CaptionSetResponse])
 def list_caption_sets(dataset_id: str, db: Session = Depends(get_db)):
     """List all caption sets for a dataset."""
+    from ..services.caption_service import CaptionService
+    from ..schemas import CaptionSetResponse
+    
     service = DatasetService(db)
     dataset = service.get_dataset(dataset_id)
     if not dataset:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dataset not found")
     
-    return service.list_caption_sets(dataset_id)
+    caption_sets = service.list_caption_sets(dataset_id)
+    
+    # Add can_rollback_bulk_edit flag to each caption set
+    caption_service = CaptionService(db)
+    result = []
+    for cs in caption_sets:
+        # Convert to Pydantic model with from_attributes
+        cs_response = CaptionSetResponse.model_validate(cs)
+        # Add the computed flag
+        cs_response.can_rollback_bulk_edit = caption_service.can_rollback_last_bulk_edit(cs.id)
+        result.append(cs_response)
+    
+    return result

@@ -167,7 +167,13 @@ const Utils = {
             
             // Set title and message
             document.getElementById('confirmModalTitle').textContent = title;
-            document.getElementById('confirmModalBody').textContent = message;
+            // Use innerHTML if message contains HTML tags, otherwise use textContent
+            const bodyEl = document.getElementById('confirmModalBody');
+            if (message.includes('<')) {
+                bodyEl.innerHTML = message;
+            } else {
+                bodyEl.textContent = message;
+            }
             
             // Remove any existing event listeners by cloning buttons
             const confirmBtn = document.getElementById('confirmModalConfirm');

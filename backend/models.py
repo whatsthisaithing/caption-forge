@@ -210,10 +210,47 @@ class Caption(Base):
     # Relationships
     caption_set = relationship("CaptionSet", back_populates="captions")
     file = relationship("TrackedFile", back_populates="captions")
+    versions = relationship("CaptionVersion", back_populates="caption", cascade="all, delete-orphan", order_by="CaptionVersion.version_number.desc()")
     
     __table_args__ = (
         UniqueConstraint("caption_set_id", "file_id", name="uq_caption_set_file"),
         Index("idx_captions_source", "source"),
+    )
+
+
+class CaptionVersion(Base):
+    """Version history for captions - tracks all changes over time."""
+    
+    __tablename__ = "caption_versions"
+    
+    id = Column(String(36), primary_key=True, default=generate_uuid)
+    caption_id = Column(String(36), ForeignKey("captions.id", ondelete="CASCADE"), nullable=False)
+    
+    # Version tracking
+    version_number = Column(Integer, nullable=False)  # Incremental version number
+    
+    # Caption content at this version
+    text = Column(Text, nullable=False)
+    
+    # Version metadata
+    operation = Column(String(100), nullable=True)  # bulk_edit, manual_edit, auto_generate, etc.
+    operation_description = Column(Text, nullable=True)  # e.g., "Prepended 'Nova Chorus,'"
+    
+    # Source at time of version
+    source = Column(String(50), nullable=True)
+    vision_model = Column(String(100), nullable=True)
+    quality_score = Column(Float, nullable=True)
+    quality_flags = Column(Text, nullable=True)
+    
+    # Timestamp
+    created_date = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    caption = relationship("Caption", back_populates="versions")
+    
+    __table_args__ = (
+        Index("idx_caption_versions_caption", "caption_id"),
+        Index("idx_caption_versions_version", "caption_id", "version_number"),
     )
 
 

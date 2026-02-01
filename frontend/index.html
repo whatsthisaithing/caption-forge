@@ -822,6 +822,9 @@
                                         <span id="datasetCaptionMaxLength" class="ms-1"></span>
                                     </small>
                                     <div>
+                                        <button class="btn btn-sm btn-outline-info me-1" id="datasetCaptionHistoryBtn" title="View version history">
+                                            <i class="bi bi-clock-history me-1"></i>History
+                                        </button>
                                         <button class="btn btn-sm btn-outline-secondary me-1" id="datasetCaptionGenerateBtn">
                                             <i class="bi bi-magic me-1"></i>Generate
                                         </button>
@@ -850,6 +853,60 @@
                     <button class="btn btn-outline-secondary" id="datasetCaptionNextBtn">
                         Next<i class="bi bi-chevron-right ms-1"></i>
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Caption Version History -->
+    <div class="modal fade" id="captionHistoryModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content bg-dark border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">
+                        <i class="bi bi-clock-history me-2"></i>Version History
+                        <span class="text-muted ms-2 small" id="captionHistoryFilename"></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        All changes to this caption are tracked. You can rollback to any previous version.
+                    </div>
+                    
+                    <!-- Current Version -->
+                    <div class="card bg-dark border-primary mb-3">
+                        <div class="card-header bg-primary">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <strong><i class="bi bi-star-fill me-1"></i>Current Version</strong>
+                                <span class="badge bg-light text-dark" id="captionHistoryCurrentDate">--</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="font-monospace small bg-dark p-3 rounded border border-secondary" id="captionHistoryCurrentText">
+                                --
+                            </div>
+                            <div class="mt-2 small text-muted">
+                                <strong>Source:</strong> <span id="captionHistoryCurrentSource">--</span>
+                                <span id="captionHistoryCurrentModel" class="ms-2"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Version List -->
+                    <h6 class="text-muted mb-3">Previous Versions</h6>
+                    <div id="captionHistoryList">
+                        <div class="text-center text-muted py-4">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <div class="mt-2">Loading version history...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -1053,6 +1110,188 @@
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                     <button type="button" class="btn btn-primary" id="saveSettingsBtn">
                         <i class="bi bi-check-lg me-1"></i>Save Settings
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Bulk Edit Captions -->
+    <div class="modal fade" id="bulkEditModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content bg-dark border-secondary">
+                <div class="modal-header border-secondary">
+                    <h5 class="modal-title">
+                        <i class="bi bi-pencil-square me-2"></i>Bulk Edit Captions
+                        <span class="text-muted ms-2" style="font-size: 0.9rem;">- <span id="bulkEditCaptionSetName"></span></span>
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        <strong>Select operations to perform:</strong> Operations will be applied in the order shown. 
+                        Click "Preview" to see changes before applying.
+                    </div>
+
+                    <!-- Operations -->
+                    <div class="accordion" id="bulkEditAccordion">
+                        <!-- Prepend Text -->
+                        <div class="accordion-item bg-dark border-secondary">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-dark text-light border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#prependCollapse">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" id="enablePrepend" onclick="event.stopPropagation(); Datasets.toggleOperationConfig('prepend', this)">
+                                    </div>
+                                    <i class="bi bi-arrow-left-square me-2"></i>Prepend Text
+                                </button>
+                            </h2>
+                            <div id="prependCollapse" class="accordion-collapse collapse">
+                                <div class="accordion-body operation-config" id="prependConfig" style="display: none;">
+                                    <label class="form-label">Text to prepend:</label>
+                                    <input type="text" class="form-control" id="prependText" placeholder="e.g., Nova Chorus, ">
+                                    <small class="text-muted">This text will be added to the beginning of all captions</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Append Text -->
+                        <div class="accordion-item bg-dark border-secondary">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-dark text-light border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#appendCollapse">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" id="enableAppend" onclick="event.stopPropagation(); Datasets.toggleOperationConfig('append', this)">
+                                    </div>
+                                    <i class="bi bi-arrow-right-square me-2"></i>Append Text
+                                </button>
+                            </h2>
+                            <div id="appendCollapse" class="accordion-collapse collapse">
+                                <div class="accordion-body operation-config" id="appendConfig" style="display: none;">
+                                    <label class="form-label">Text to append:</label>
+                                    <input type="text" class="form-control" id="appendText" placeholder="e.g.,  (high quality photo)">
+                                    <small class="text-muted">This text will be added to the end of all captions</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Find and Replace -->
+                        <div class="accordion-item bg-dark border-secondary">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-dark text-light border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#findReplaceCollapse">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" id="enableFindReplace" onclick="event.stopPropagation(); Datasets.toggleOperationConfig('findReplace', this)">
+                                    </div>
+                                    <i class="bi bi-search me-2"></i>Find and Replace
+                                </button>
+                            </h2>
+                            <div id="findReplaceCollapse" class="accordion-collapse collapse">
+                                <div class="accordion-body operation-config" id="findReplaceConfig" style="display: none;">
+                                    <div class="mb-2">
+                                        <label class="form-label">Find:</label>
+                                        <input type="text" class="form-control" id="findText" placeholder="Text to find">
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="form-label">Replace with:</label>
+                                        <input type="text" class="form-control" id="replaceText" placeholder="Replacement text">
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="useRegex" onchange="document.getElementById('regexExample').style.display = this.checked ? 'block' : 'none'">
+                                        <label class="form-check-label" for="useRegex">Use regular expressions</label>
+                                    </div>
+                                    <div id="regexExample" class="mt-2 p-2 bg-dark border border-secondary rounded" style="display: none;">
+                                        <small class="text-muted">
+                                            <strong>Example:</strong> Find <code class="text-info">(red|blue)\s+(hair|eyes)</code> Replace <code class="text-info">silver \2</code><br>
+                                            Matches "red hair", "blue eyes" etc. and replaces color with "silver". Use <code class="text-info">\1 \2</code> for backreferences.
+                                        </small>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="caseSensitive" checked>
+                                        <label class="form-check-label" for="caseSensitive">Case sensitive</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Trim Whitespace -->
+                        <div class="accordion-item bg-dark border-secondary">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-dark text-light border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#trimCollapse">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" id="enableTrim" onclick="event.stopPropagation()">
+                                    </div>
+                                    <i class="bi bi-text-paragraph me-2"></i>Trim Whitespace
+                                </button>
+                            </h2>
+                            <div id="trimCollapse" class="accordion-collapse collapse">
+                                <div class="accordion-body">
+                                    <p class="text-muted mb-0">Remove leading/trailing whitespace and normalize multiple spaces to single spaces</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Case Conversion -->
+                        <div class="accordion-item bg-dark border-secondary">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-dark text-light border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#caseConvertCollapse">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" id="enableCaseConvert" onclick="event.stopPropagation(); Datasets.toggleOperationConfig('caseConvert', this)">
+                                    </div>
+                                    <i class="bi bi-type me-2"></i>Case Conversion
+                                </button>
+                            </h2>
+                            <div id="caseConvertCollapse" class="accordion-collapse collapse">
+                                <div class="accordion-body operation-config" id="caseConvertConfig" style="display: none;">
+                                    <label class="form-label">Convert to:</label>
+                                    <select class="form-select" id="caseType">
+                                        <option value="lower">lowercase</option>
+                                        <option value="upper">UPPERCASE</option>
+                                        <option value="title">Title Case</option>
+                                        <option value="sentence">Sentence case</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Remove Pattern -->
+                        <div class="accordion-item bg-dark border-secondary">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed bg-dark text-light border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#removePatternCollapse">
+                                    <div class="form-check me-3">
+                                        <input class="form-check-input" type="checkbox" id="enableRemovePattern" onclick="event.stopPropagation(); Datasets.toggleOperationConfig('removePattern', this)">
+                                    </div>
+                                    <i class="bi bi-eraser me-2"></i>Remove Pattern
+                                </button>
+                            </h2>
+                            <div id="removePatternCollapse" class="accordion-collapse collapse">
+                                <div class="accordion-body operation-config" id="removePatternConfig" style="display: none;">
+                                    <label class="form-label">Pattern to remove:</label>
+                                    <input type="text" class="form-control" id="removePattern" placeholder="e.g., #hashtag">
+                                    <div class="form-check mt-2">
+                                        <input class="form-check-input" type="checkbox" id="patternIsRegex">
+                                        <label class="form-check-label" for="patternIsRegex">Use regular expression</label>
+                                    </div>
+                                    <small class="text-muted">Pattern will be replaced with empty string</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Preview Section -->
+                    <div id="bulkEditPreview" style="display: none;" class="mt-4">
+                        <h6 class="text-light mb-3">
+                            <i class="bi bi-eye me-2"></i>Preview
+                        </h6>
+                        <div id="previewSummary"></div>
+                        <div id="previewSamples"></div>
+                    </div>
+                </div>
+                <div class="modal-footer border-secondary">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-info" id="previewBulkEditBtn" onclick="Datasets.previewBulkEdit()">
+                        <i class="bi bi-eye me-1"></i>Preview
+                    </button>
+                    <button type="button" class="btn btn-primary" id="applyBulkEditBtn" onclick="Datasets.applyBulkEdit()" disabled>
+                        <i class="bi bi-check-lg me-1"></i>Apply Changes
                     </button>
                 </div>
             </div>

@@ -298,6 +298,7 @@ Include: subject, gender, pose/action, clothing details, hair color/style, eye c
         document.getElementById('datasetCaptionSaveBtn')?.addEventListener('click', () => this.saveCaption());
         document.getElementById('datasetCaptionCopyImported')?.addEventListener('click', () => this.copyImportedCaption());
         document.getElementById('datasetCaptionGenerateBtn')?.addEventListener('click', () => this.generateCaption());
+        document.getElementById('datasetCaptionHistoryBtn')?.addEventListener('click', () => this.showCaptionHistory());
         document.getElementById('datasetCaptionPrevBtn')?.addEventListener('click', () => this.navigatePrev());
         document.getElementById('datasetCaptionNextBtn')?.addEventListener('click', () => this.navigateNext());
         
@@ -534,6 +535,14 @@ Include: subject, gender, pose/action, clothing details, hair color/style, eye c
                         <button class="btn btn-outline-primary auto-caption-btn" title="Auto-caption">
                             <i class="bi bi-magic"></i>
                         </button>
+                        <button class="btn btn-outline-info bulk-edit-btn" title="Bulk Edit Captions">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        ${cs.can_rollback_bulk_edit ? `
+                            <button class="btn btn-outline-warning bulk-rollback-btn" title="Rollback Last Bulk Edit">
+                                <i class="bi bi-arrow-counterclockwise"></i>
+                            </button>
+                        ` : ''}
                         <button class="btn btn-outline-secondary edit-btn" title="Edit">
                             <i class="bi bi-pencil"></i>
                         </button>
@@ -558,6 +567,18 @@ Include: subject, gender, pose/action, clothing details, hair color/style, eye c
                 el.querySelector('.auto-caption-btn').addEventListener('click', () => {
                     this.showAutoCaptionDialog(csId);
                 });
+                
+                el.querySelector('.bulk-edit-btn').addEventListener('click', () => {
+                    this.showBulkEditModal(csId);
+                });
+                
+                // Bulk rollback button (conditional - may not exist)
+                const rollbackBtn = el.querySelector('.bulk-rollback-btn');
+                if (rollbackBtn) {
+                    rollbackBtn.addEventListener('click', () => {
+                        this.showBulkRollbackDialog(csId);
+                    });
+                }
                 
                 el.querySelector('.edit-btn').addEventListener('click', () => {
                     this.editCaptionSet(csId);
@@ -1475,6 +1496,535 @@ Include: subject, gender, pose/action, clothing details, hair color/style, eye c
             Utils.showToast('Caption set updated', 'success');
         } catch (error) {
             Utils.showToast('Failed to update caption set: ' + error.message, 'error');
+        }
+    },
+    
+    // ============================================================
+    // Bulk Edit Functions
+    // ============================================================
+    
+    /**
+     * Show bulk edit modal for a caption set
+     */
+    async showBulkEditModal(captionSetId) {
+        try {
+            // Fetch caption set details
+            const captionSet = await API.request(`/caption-sets/${captionSetId}`);
+            
+            // Store for later use
+            this.bulkEditCaptionSetId = captionSetId;
+            this.bulkEditCaptionSetName = captionSet.name;
+            
+            // Update modal title
+            document.getElementById('bulkEditCaptionSetName').textContent = captionSet.name;
+            
+            // Reset form
+            this.resetBulkEditForm();
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('bulkEditModal'));
+            modal.show();
+        } catch (error) {
+            Utils.showToast('Failed to load caption set: ' + error.message, 'error');
+        }
+    },
+    
+    /**
+     * Reset bulk edit form to initial state
+     */
+    resetBulkEditForm() {
+        // Uncheck all operations
+        document.querySelectorAll('#bulkEditModal input[type="checkbox"]').forEach(cb => cb.checked = false);
+        
+        // Clear all inputs
+        document.getElementById('prependText').value = '';
+        document.getElementById('appendText').value = '';
+        document.getElementById('findText').value = '';
+        document.getElementById('replaceText').value = '';
+        document.getElementById('useRegex').checked = false;
+        document.getElementById('caseSensitive').checked = true;
+        document.getElementById('caseType').value = 'lower';
+        document.getElementById('removePattern').value = '';
+        document.getElementById('patternIsRegex').checked = false;
+        
+        // Hide all config sections
+        document.querySelectorAll('.operation-config').forEach(el => el.style.display = 'none');
+        
+        // Hide preview
+        document.getElementById('bulkEditPreview').style.display = 'none';
+    },
+    
+    /**
+     * Toggle operation config visibility
+     */
+    toggleOperationConfig(operationType, checkbox) {
+        const configEl = document.getElementById(operationType + 'Config');
+        if (configEl) {
+            configEl.style.display = checkbox.checked ? 'block' : 'none';
+        }
+        
+        // Also expand/collapse the accordion section
+        const collapseMap = {
+            'prepend': 'prependCollapse',
+            'append': 'appendCollapse',
+            'findReplace': 'findReplaceCollapse',
+            'caseConvert': 'caseConvertCollapse',
+            'removePattern': 'removePatternCollapse'
+        };
+        
+        const collapseId = collapseMap[operationType];
+        if (collapseId) {
+            const collapseEl = document.getElementById(collapseId);
+            const bsCollapse = bootstrap.Collapse.getInstance(collapseEl) || new bootstrap.Collapse(collapseEl, { toggle: false });
+            
+            if (checkbox.checked) {
+                bsCollapse.show();
+            } else {
+                bsCollapse.hide();
+            }
+        }
+    },
+    
+    /**
+     * Build operations array from form
+     */
+    buildBulkEditOperations() {
+        const operations = [];
+        
+        // Prepend
+        if (document.getElementById('enablePrepend').checked) {
+            const text = document.getElementById('prependText').value;
+            if (text) {
+                operations.push({
+                    operation_type: 'prepend',
+                    text: text
+                });
+            }
+        }
+        
+        // Append
+        if (document.getElementById('enableAppend').checked) {
+            const text = document.getElementById('appendText').value;
+            if (text) {
+                operations.push({
+                    operation_type: 'append',
+                    text: text
+                });
+            }
+        }
+        
+        // Find and replace
+        if (document.getElementById('enableFindReplace').checked) {
+            const find = document.getElementById('findText').value;
+            const replace = document.getElementById('replaceText').value;
+            if (find) {
+                operations.push({
+                    operation_type: 'find_replace',
+                    find: find,
+                    replace: replace || '',
+                    use_regex: document.getElementById('useRegex').checked,
+                    case_sensitive: document.getElementById('caseSensitive').checked
+                });
+            }
+        }
+        
+        // Trim
+        if (document.getElementById('enableTrim').checked) {
+            operations.push({
+                operation_type: 'trim'
+            });
+        }
+        
+        // Case convert
+        if (document.getElementById('enableCaseConvert').checked) {
+            operations.push({
+                operation_type: 'case_convert',
+                case_type: document.getElementById('caseType').value
+            });
+        }
+        
+        // Remove pattern
+        if (document.getElementById('enableRemovePattern').checked) {
+            const pattern = document.getElementById('removePattern').value;
+            if (pattern) {
+                operations.push({
+                    operation_type: 'remove_pattern',
+                    pattern: pattern,
+                    pattern_is_regex: document.getElementById('patternIsRegex').checked
+                });
+            }
+        }
+        
+        return operations;
+    },
+    
+    /**
+     * Preview bulk edit operations
+     */
+    async previewBulkEdit() {
+        const operations = this.buildBulkEditOperations();
+        
+        if (operations.length === 0) {
+            Utils.showToast('Please enable and configure at least one operation', 'warning');
+            return;
+        }
+        
+        const previewBtn = document.getElementById('previewBulkEditBtn');
+        const originalText = previewBtn.innerHTML;
+        previewBtn.disabled = true;
+        previewBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Previewing...';
+        
+        try {
+            const result = await API.request(`/caption-sets/${this.bulkEditCaptionSetId}/bulk-edit-preview`, {
+                method: 'POST',
+                body: { operations }
+            });
+            
+            // Show preview section
+            const previewEl = document.getElementById('bulkEditPreview');
+            previewEl.style.display = 'block';
+            
+            // Update summary
+            document.getElementById('previewSummary').innerHTML = `
+                <div class="alert alert-info mb-3">
+                    <strong>Operations:</strong> ${Utils.escapeHtml(result.operation_summary)}<br>
+                    <strong>Total captions:</strong> ${result.total_captions}<br>
+                    <strong>Will be affected:</strong> ${result.affected_captions}
+                </div>
+            `;
+            
+            // Show samples
+            const samplesEl = document.getElementById('previewSamples');
+            if (result.samples && result.samples.length > 0) {
+                samplesEl.innerHTML = result.samples.map(sample => `
+                    <div class="card mb-2">
+                        <div class="card-body p-3">
+                            <div class="mb-2">
+                                <small class="text-muted">Before:</small>
+                                <div class="bg-dark p-2 rounded font-monospace small text-white">${Utils.escapeHtml(sample.before)}</div>
+                            </div>
+                            <div>
+                                <small class="text-muted">After:</small>
+                                <div class="bg-success bg-opacity-10 p-2 rounded font-monospace small">${Utils.escapeHtml(sample.after)}</div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                samplesEl.innerHTML = '<p class="text-muted text-center">No changes detected</p>';
+            }
+            
+            // Enable apply button if changes detected
+            document.getElementById('applyBulkEditBtn').disabled = result.affected_captions === 0;
+            
+        } catch (error) {
+            Utils.showToast('Preview failed: ' + error.message, 'error');
+        } finally {
+            previewBtn.disabled = false;
+            previewBtn.innerHTML = originalText;
+        }
+    },
+    
+    /**
+     * Apply bulk edit operations
+     */
+    async applyBulkEdit() {
+        if (!confirm('Are you sure you want to apply these changes? This will modify all affected captions.')) {
+            return;
+        }
+        
+        const operations = this.buildBulkEditOperations();
+        
+        if (operations.length === 0) {
+            Utils.showToast('Please enable and configure at least one operation', 'warning');
+            return;
+        }
+        
+        const applyBtn = document.getElementById('applyBulkEditBtn');
+        const originalText = applyBtn.innerHTML;
+        applyBtn.disabled = true;
+        applyBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Applying...';
+        
+        try {
+            const result = await API.request(`/caption-sets/${this.bulkEditCaptionSetId}/bulk-edit-apply`, {
+                method: 'POST',
+                body: { operations }
+            });
+            
+            // Close modal
+            const modalEl = document.getElementById('bulkEditModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            
+            // Show success message
+            let message = `Bulk edit complete: ${result.updated_count} captions updated`;
+            if (result.skipped_count > 0) {
+                message += `, ${result.skipped_count} unchanged`;
+            }
+            if (result.error_count > 0) {
+                message += `, ${result.error_count} errors`;
+            }
+            
+            Utils.showToast(message, result.error_count > 0 ? 'warning' : 'success');
+            
+            // Refresh current view if showing captions from this set
+            if (this.currentCaptionSetId === this.bulkEditCaptionSetId && this.currentEditingFileId) {
+                await this.loadFileCaption(this.currentEditingFileId);
+            }
+            
+        } catch (error) {
+            Utils.showToast('Bulk edit failed: ' + error.message, 'error');
+        } finally {
+            applyBtn.disabled = false;
+            applyBtn.innerHTML = originalText;
+        }
+    },
+    
+    // ============================================================
+    // Version History Methods
+    // ============================================================
+    
+    /**
+     * Show version history for the current caption
+     */
+    async showCaptionHistory() {
+        if (!this.currentEditingFileId || !this.currentCaptionSetId) {
+            Utils.showToast('No caption loaded', 'warning');
+            return;
+        }
+        
+        try {
+            // Get the caption data for this file
+            const data = await API.request(`/caption-sets/${this.currentCaptionSetId}/files/${this.currentEditingFileId}`);
+            
+            if (!data.caption || !data.caption.id) {
+                Utils.showToast('No caption exists yet - save a caption first', 'info');
+                return;
+            }
+            
+            // Set filename in modal
+            document.getElementById('captionHistoryFilename').textContent = data.filename;
+            
+            // Show current version
+            document.getElementById('captionHistoryCurrentText').textContent = data.caption.text || '--';
+            document.getElementById('captionHistoryCurrentDate').textContent = data.caption.modified_date ? 
+                new Date(data.caption.modified_date).toLocaleString() : '--';
+            document.getElementById('captionHistoryCurrentSource').textContent = data.caption.source || 'unknown';
+            
+            const modelEl = document.getElementById('captionHistoryCurrentModel');
+            if (data.caption.vision_model) {
+                modelEl.innerHTML = `<strong>Model:</strong> ${Utils.escapeHtml(data.caption.vision_model)}`;
+            } else {
+                modelEl.innerHTML = '';
+            }
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('captionHistoryModal'));
+            modal.show();
+            
+            // Load version history
+            await this.loadCaptionVersions(data.caption.id);
+            
+        } catch (error) {
+            Utils.showToast('Failed to load caption history: ' + error.message, 'error');
+        }
+    },
+    
+    /**
+     * Load version history for a caption
+     */
+    async loadCaptionVersions(captionId) {
+        const listEl = document.getElementById('captionHistoryList');
+        listEl.innerHTML = `
+            <div class="text-center text-muted py-4">
+                <div class="spinner-border spinner-border-sm" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="mt-2">Loading version history...</div>
+            </div>
+        `;
+        
+        try {
+            const result = await API.request(`/captions/${captionId}/history`);
+            
+            if (!result.versions || result.versions.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center text-muted py-4">
+                        <i class="bi bi-clock-history fs-1 mb-2 d-block"></i>
+                        No previous versions
+                    </div>
+                `;
+                return;
+            }
+            
+            // Render versions (already sorted by version_number desc)
+            listEl.innerHTML = result.versions.map(version => `
+                <div class="card bg-dark border-secondary mb-2" data-version-id="${version.id}">
+                    <div class="card-body p-3">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <span class="badge bg-secondary">Version ${version.version_number}</span>
+                                ${version.operation ? `<span class="badge bg-info ms-1">${Utils.escapeHtml(version.operation)}</span>` : ''}
+                            </div>
+                            <small class="text-muted">${new Date(version.created_date).toLocaleString()}</small>
+                        </div>
+                        ${version.operation_description ? `
+                            <div class="small text-muted mb-2">
+                                <i class="bi bi-info-circle me-1"></i>${Utils.escapeHtml(version.operation_description)}
+                            </div>
+                        ` : ''}
+                        <div class="font-monospace small bg-darker p-2 rounded border border-secondary mb-2" style="max-height: 100px; overflow-y: auto;">
+                            ${Utils.escapeHtml(version.text)}
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                ${version.source ? `Source: ${version.source}` : ''}
+                                ${version.vision_model ? ` • Model: ${Utils.escapeHtml(version.vision_model)}` : ''}
+                            </small>
+                            <button class="btn btn-sm btn-outline-warning rollback-version-btn" data-caption-id="${captionId}" data-version-id="${version.id}">
+                                <i class="bi bi-arrow-counterclockwise me-1"></i>Rollback
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            // Bind rollback buttons
+            listEl.querySelectorAll('.rollback-version-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    this.rollbackCaptionToVersion(btn.dataset.captionId, btn.dataset.versionId);
+                });
+            });
+            
+        } catch (error) {
+            listEl.innerHTML = Utils.emptyState('bi-exclamation-triangle', 'Error loading history', error.message);
+        }
+    },
+    
+    /**
+     * Rollback caption to a specific version
+     */
+    async rollbackCaptionToVersion(captionId, versionId) {
+        if (!confirm('Are you sure you want to rollback to this version? The current caption will be saved as a new version before rolling back.')) {
+            return;
+        }
+        
+        try {
+            const result = await API.request(`/captions/${captionId}/rollback/${versionId}`, {
+                method: 'POST'
+            });
+            
+            Utils.showToast('Caption rolled back successfully', 'success');
+            
+            // Close history modal
+            const modalEl = document.getElementById('captionHistoryModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            modal.hide();
+            
+            // Reload the caption in the editor
+            if (this.currentEditingFileId) {
+                await this.showCaptionEditor(this.currentEditingFileId);
+            }
+            
+        } catch (error) {
+            Utils.showToast('Failed to rollback caption: ' + error.message, 'error');
+        }
+    },
+    
+    // ============================================================
+    // Bulk Rollback Methods
+    // ============================================================
+    
+    /**
+     * Show bulk rollback confirmation dialog
+     */
+    async showBulkRollbackDialog(captionSetId) {
+        try {
+            // Get caption set details
+            const captionSet = await API.request(`/caption-sets/${captionSetId}`);
+            
+            // Get preview
+            const preview = await API.request(`/caption-sets/${captionSetId}/bulk-rollback-preview`, {
+                method: 'POST'
+            });
+            
+            if (preview.rollbackable_count === 0) {
+                Utils.showToast('No bulk edits to rollback', 'info');
+                return;
+            }
+            
+            // Build confirmation message
+            let message = `<strong>Rollback Last Bulk Edit</strong><br><br>`;
+            message += `Caption Set: <strong>${Utils.escapeHtml(captionSet.name)}</strong><br>`;
+            message += `Total captions: ${preview.total_captions}<br>`;
+            message += `<strong>Will rollback: ${preview.rollbackable_count} captions</strong><br>`;
+            
+            if (preview.skipped_count > 0) {
+                message += `<span class="text-muted">Will skip: ${preview.skipped_count} captions</span><br>`;
+            }
+            
+            if (preview.samples && preview.samples.length > 0) {
+                message += `<br><strong>Preview (first ${preview.samples.length}):</strong><br>`;
+                message += `<div class="mt-2" style="max-height: 300px; overflow-y: auto;">`;
+                preview.samples.forEach(sample => {
+                    message += `
+                        <div class="card bg-dark border-secondary mb-2">
+                            <div class="card-body p-2">
+                                <small class="text-muted">${sample.bulk_edit_description || 'Bulk edit'}</small>
+                                <div class="small mt-1">
+                                    <strong>Current:</strong> ${Utils.escapeHtml(sample.current_text.substring(0, 100))}${sample.current_text.length > 100 ? '...' : ''}
+                                </div>
+                                <div class="small mt-1 text-success">
+                                    <strong>Rollback to:</strong> ${Utils.escapeHtml(sample.rollback_to_text.substring(0, 100))}${sample.rollback_to_text.length > 100 ? '...' : ''}
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                });
+                message += `</div>`;
+            }
+            
+            message += `<br><strong>Are you sure?</strong> This will restore captions to their state before the last bulk edit.`;
+            
+            // Show confirmation (note: Utils.confirm takes message first, then title)
+            if (await Utils.confirm(message, 'Rollback Bulk Edit')) {
+                await this.applyBulkRollback(captionSetId);
+            }
+            
+        } catch (error) {
+            Utils.showToast('Failed to prepare rollback: ' + error.message, 'error');
+        }
+    },
+    
+    /**
+     * Apply bulk rollback
+     */
+    async applyBulkRollback(captionSetId) {
+        try {
+            const result = await API.request(`/caption-sets/${captionSetId}/bulk-rollback-apply`, {
+                method: 'POST'
+            });
+            
+            let message = `Rollback complete: ${result.rolled_back_count} captions restored`;
+            if (result.skipped_count > 0) {
+                message += `, ${result.skipped_count} skipped`;
+            }
+            if (result.error_count > 0) {
+                message += `, ${result.error_count} errors`;
+            }
+            
+            Utils.showToast(message, result.error_count > 0 ? 'warning' : 'success');
+            
+            // Refresh caption sets to update rollback button visibility
+            await this.loadCaptionSets(this.currentDatasetId);
+            
+            // Refresh current caption if showing one from this set
+            if (this.currentCaptionSetId === captionSetId && this.currentEditingFileId) {
+                await this.showCaptionEditor(this.currentEditingFileId);
+            }
+            
+        } catch (error) {
+            Utils.showToast('Rollback failed: ' + error.message, 'error');
         }
     }
 };
