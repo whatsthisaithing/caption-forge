@@ -132,14 +132,6 @@ def _run_alembic_migrations():
         from alembic.script import ScriptDirectory
         from alembic.runtime.migration import MigrationContext
         
-        # Suppress Alembic's verbose output BEFORE doing anything
-        # This prevents INFO messages from going to stderr
-        import logging as alembic_logging
-        alembic_logging.getLogger('alembic.runtime.migration').setLevel(alembic_logging.ERROR)
-        alembic_logging.getLogger('alembic.runtime.plugins').setLevel(alembic_logging.ERROR)
-        alembic_logging.getLogger('alembic.env').setLevel(alembic_logging.ERROR)
-        alembic_logging.getLogger('alembic').setLevel(alembic_logging.ERROR)
-        
         alembic_ini_path = PROJECT_ROOT / "alembic.ini"
         
         if not alembic_ini_path.exists():
@@ -153,44 +145,63 @@ def _run_alembic_migrations():
         db_path = get_database_path()
         alembic_cfg.set_main_option("sqlalchemy.url", f"sqlite:///{db_path}")
         
-        # Redirect Alembic output to null to prevent stdout/stderr pollution
-        alembic_cfg.attributes['configure_logger'] = False
-        
         # Get the script directory for revision checks
         script = ScriptDirectory.from_config(alembic_cfg)
         head_rev = script.get_current_head()
         
         # Fast pre-check: if current revision == head revision, skip migration
         engine = get_engine()
-        with engine.begin() as conn:  # Use begin() to ensure proper transaction handling
+        
+        # Check revision without holding a connection
+        with engine.connect() as conn:
             migration_context = MigrationContext.configure(conn)
             current_rev = migration_context.get_current_revision()
-            
-            logger.debug(f"Current database revision: {current_rev}, Head revision: {head_rev}")
-            
-            if current_rev == head_rev and current_rev is not None:
-                logger.debug(f"Database schema is up to date at revision {current_rev}")
-                return
-            
-            if current_rev is None:
-                logger.info(f"Database has no revision, initializing to {head_rev}")
-            else:
-                logger.info(f"Database needs migration: {current_rev} -> {head_rev}")
         
-        # Run migrations to head (latest)
-        # Don't capture output - the logger suppression is enough
+        logger.debug(f"Current database revision: {current_rev}, Head revision: {head_rev}")
+        
+        if current_rev == head_rev and current_rev is not None:
+            logger.debug(f"Database schema is up to date at revision {current_rev}")
+            return
+        
+        if current_rev is None:
+            logger.info(f"Database has no revision, initializing to {head_rev}")
+        else:
+            logger.info(f"Database needs migration: {current_rev} -> {head_rev}")
+        
+        # Run migrations - use subprocess to avoid hanging
         logger.info("Running database migrations...")
         
+        import subprocess
+        alembic_dir = PROJECT_ROOT
+        python_exe = sys.executable
+        
         try:
-            alembic_command.upgrade(alembic_cfg, "head")
-        except Exception as e:
-            logger.error(f"Migration command failed: {e}", exc_info=True)
+            result = subprocess.run(
+                [python_exe, "-m", "alembic", "upgrade", "head"],
+                cwd=str(alembic_dir),
+                capture_output=True,
+                text=True,
+                timeout=30
+            )
+            
+            if result.returncode == 0:
+                logger.info("Migration command completed successfully")
+            else:
+                logger.error(f"Migration failed with code {result.returncode}")
+                logger.error(f"stdout: {result.stdout}")
+                logger.error(f"stderr: {result.stderr}")
+                raise RuntimeError(f"Migration failed: {result.stderr}")
+        except subprocess.TimeoutExpired:
+            logger.error("Migration timed out after 30 seconds")
             raise
         
         # Verify the migration succeeded by checking the revision
-        with engine.begin() as conn:
+        logger.info("Verifying migration result...")
+        with engine.connect() as conn:
             migration_context = MigrationContext.configure(conn)
             new_rev = migration_context.get_current_revision()
+            
+            logger.info(f"New revision: {new_rev}, Expected: {head_rev}")
             
             if new_rev == head_rev:
                 logger.info(f"Database migrations complete - now at revision {new_rev}")
