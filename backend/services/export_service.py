@@ -167,7 +167,7 @@ class ExportService:
             # Process and copy image
             if request.image_format and request.image_format != "original":
                 self._process_image(source_path, output_path, request)
-            elif request.target_resolution:
+            elif request.target_resolution or request.max_resolution_longest_side:
                 self._process_image(source_path, output_path, request)
             else:
                 shutil.copy2(source_path, output_path)
@@ -240,7 +240,7 @@ class ExportService:
                     zf.write(temp_path, output_filename)
                     total_size += temp_path.stat().st_size
                     temp_path.unlink()
-                elif request.target_resolution:
+                elif request.target_resolution or request.max_resolution_longest_side:
                     temp_path = self.staging_dir / f"temp_{export_id}_{output_filename}"
                     self._process_image(source_path, temp_path, request)
                     zf.write(temp_path, output_filename)
@@ -287,13 +287,21 @@ class ExportService:
                 img = img.convert("RGB")
             
             # Resize if needed
-            if request.target_resolution:
+            # max_resolution_longest_side takes precedence over target_resolution
+            resize_to = request.max_resolution_longest_side or request.target_resolution
+            if resize_to:
                 width, height = img.size
                 max_dim = max(width, height)
-                if max_dim > request.target_resolution:
-                    scale = request.target_resolution / max_dim
+                
+                # Resize both up and down to match the target resolution
+                if max_dim != resize_to:
+                    scale = resize_to / max_dim
                     new_size = (int(width * scale), int(height * scale))
-                    img = img.resize(new_size, Image.Resampling.LANCZOS)
+                    
+                    # Use best quality resampling algorithm
+                    # LANCZOS for downscaling, BICUBIC for upscaling
+                    resampling = Image.Resampling.LANCZOS if scale < 1 else Image.Resampling.BICUBIC
+                    img = img.resize(new_size, resampling)
             
             # Save with appropriate settings
             save_kwargs = {}

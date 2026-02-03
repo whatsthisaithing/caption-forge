@@ -129,6 +129,13 @@ def _run_alembic_migrations():
         from alembic.script import ScriptDirectory
         from alembic.runtime.migration import MigrationContext
         
+        # Suppress Alembic's verbose output BEFORE doing anything
+        # This prevents INFO messages from going to stderr
+        import logging as alembic_logging
+        alembic_logging.getLogger('alembic.runtime.migration').setLevel(alembic_logging.WARNING)
+        alembic_logging.getLogger('alembic.env').setLevel(alembic_logging.WARNING)
+        alembic_logging.getLogger('alembic').setLevel(alembic_logging.WARNING)
+        
         alembic_ini_path = PROJECT_ROOT / "alembic.ini"
         
         if not alembic_ini_path.exists():
@@ -142,9 +149,14 @@ def _run_alembic_migrations():
         db_path = get_database_path()
         alembic_cfg.set_main_option("sqlalchemy.url", f"sqlite:///{db_path}")
         
+        # Suppress Alembic output to stdout/stderr (in addition to logging)
+        alembic_cfg.set_main_option("output_encoding", "utf-8")
+        # Disable script_location to prevent file output
+        alembic_cfg.attributes['configure_logger'] = False
+        
         # Fast pre-check: if current revision == head revision, skip migration
         engine = get_engine()
-        with engine.connect() as conn:
+        with engine.begin() as conn:  # Use begin() to ensure proper transaction handling
             migration_context = MigrationContext.configure(conn)
             current_rev = migration_context.get_current_revision()
             
@@ -152,15 +164,14 @@ def _run_alembic_migrations():
             script = ScriptDirectory.from_config(alembic_cfg)
             head_rev = script.get_current_head()
             
-            if current_rev == head_rev:
+            if current_rev == head_rev and current_rev is not None:
                 logger.debug(f"Database schema is up to date at revision {current_rev}, skipping migrations")
                 return
             
-            logger.info(f"Database needs migration: {current_rev} -> {head_rev}")
-        
-        # Suppress Alembic's verbose output to stderr
-        import logging as alembic_logging
-        alembic_logging.getLogger('alembic').setLevel(alembic_logging.WARNING)
+            if current_rev is None:
+                logger.info(f"Database has no revision, initializing to {head_rev}")
+            else:
+                logger.info(f"Database needs migration: {current_rev} -> {head_rev}")
         
         # Run migrations to head (latest)
         logger.info("Running database migrations...")

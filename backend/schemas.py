@@ -455,6 +455,7 @@ class ExportRequest(BaseModel):
     # Image processing
     image_format: Optional[str] = Field(None, pattern="^(jpeg|png|webp|original)$")
     target_resolution: Optional[int] = Field(None, ge=64, le=8192)
+    max_resolution_longest_side: Optional[int] = Field(None, ge=64, le=16384, description="Optional max resolution for longest side - resizes images up or down")
     jpeg_quality: int = Field(95, ge=1, le=100)
     png_compression: int = Field(9, ge=0, le=9)
     strip_metadata: bool = True

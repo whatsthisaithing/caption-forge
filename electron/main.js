@@ -93,7 +93,18 @@ function startBackend() {
         
         pythonProcess.stderr.on('data', (data) => {
             const output = data.toString();
-            console.error(`[Backend Error] ${output}`);
+            // Check if this is an actual error or just info output
+            // Many libraries (including Alembic and Uvicorn) log to stderr even for INFO
+            const isError = output.toLowerCase().includes('error') || 
+                          output.toLowerCase().includes('exception') ||
+                          output.toLowerCase().includes('traceback') ||
+                          output.toLowerCase().includes('failed');
+            
+            if (isError) {
+                console.error(`[Backend Error] ${output}`);
+            } else {
+                console.log(`[Backend] ${output}`);
+            }
             
             // Uvicorn also logs startup to stderr
             if (!started && output.includes('Uvicorn running')) {

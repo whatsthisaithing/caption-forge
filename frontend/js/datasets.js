@@ -1333,6 +1333,7 @@ Include: subject, gender, pose/action, clothing details, hair color/style, eye c
             export_type: exportType,
             export_path: exportPath,
             image_format: document.getElementById('exportImageFormat').value || 'original',
+            max_resolution_longest_side: parseInt(document.getElementById('exportMaxResolution').value) || null,
             caption_extension: document.getElementById('exportCaptionExt').value,
             filename_prefix: document.getElementById('exportFilenamePrefix').value.trim() || null,
             numbering_start: parseInt(document.getElementById('exportNumberStart').value) || 1,
